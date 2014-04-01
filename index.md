@@ -11,6 +11,7 @@
 
 * Shift_JIS / CP932
 * UTF-8
+  - BOM
 * EUC
 
 ### 改行コード
