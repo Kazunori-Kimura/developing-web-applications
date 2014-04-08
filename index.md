@@ -46,8 +46,6 @@ HTTPでは8つのメソッドが定義されている。
 > Uniform Resource Identifier（ユニフォーム リソース アイデンティファイア、URI）または統一資源識別子（とういつしげんしきべつし）は、一定の書式によってリソース（資源）を指し示す識別子。1998年8月に RFC 2396 として規定され、2005年1月に RFC 3986 として改定された。URI はUniform Resource Locator (URL) の考え方を拡張したものである。
 > [Uniform Resource Identifier](http://ja.wikipedia.org/wiki/Uniform_Resource_Identifier)
 
-![URLとURI](http://ja.wikipedia.org/wiki/%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB:URI_Venn_Diagram.svg)
-
 > 2001年、W3CはRFC 3305内で、... ここで示されたW3Cの新たな考え方により、従来のURLとURNとはすべてURIと呼ばれることになった。URLやURNといった語はW3Cによって非公式な表現とされた。
 
 
@@ -80,11 +78,14 @@ HTTPのやりとりを確認します。
 
 example.comの80番ポートに接続します。
 
+    example.comというサーバーは、このようなテストを行う目的で実際に存在します。
+
 ```sh
 $ telnet example.com 80
 ```
 
 つづけて、GETメソッドを実行します。
+スペースも含めて、以下の通りタイプしてください。
 
 ```sh
 GET / HTTP/1.1
@@ -155,9 +156,14 @@ HTMLなどのリクエストに応じたデータが返ってきます。
 
 # Webアプリケーションとは？
 
-クライアントからのリクエストごとに、サーバー側の処理により
-状況に合わせたページが生成されることにより、何かしらの機能が提供されるWebサイト
+今回の勉強会では、以下のように定義します。
 
+    クライアントからのリクエストごとに、サーバー側の処理で
+    状況に合わせたページが生成されることにより、何かしらの機能が提供されるWebサイト
+
+
+このようなWebサイトを*Webサービス*と呼ぶ場合もあります。
+*Webアプリケーション*と*Webサービス*を区別する明確な定義はない...と思います。
 
 
 <br>
@@ -168,29 +174,32 @@ HTMLなどのリクエストに応じたデータが返ってきます。
 
 Webアプリケーションにおいてよく使用されるプログラミング言語
 
+### サーバー側で実行される
+
 * Java
-* C#
-* VB.NET
+* ASP.NET
+  - C#
+  - VB.NET
 
 * PHP
 * Ruby
 * Python
 * Perl
+* ASP
+  - VBScript
+  - JScript
+
+### クライアント側(ブラウザ)で表示/実行される
 
 * HTML
 * CSS
 * JavaScript
 
-
-### 標準化団体
-
-* W3C
-* ECMA
-
+<br>
 
 ## Webサーバー
 
-* Apache
+* Apache (あぱっち)
 * nginx (えんじんえっくす)
 * IIS (Internet Information Services)
 
@@ -235,6 +244,7 @@ Create / Read / Update / Delete
 * EUC
 
 
+
 #### 改行コード
 
 VimのFileFormatを元に説明
@@ -243,15 +253,12 @@ VimのFileFormatを元に説明
 * Unix (0x13)
 * Mac (0x10)
 
-```
-vim -b hoge.txt
-```
-
-
 
 ------
 
 # PHPによるWebアプリケーション開発
+
+## 開発環境の構築
 
 1. 開発環境の構築
   * VirtualBox
@@ -262,13 +269,23 @@ vim -b hoge.txt
     - apache
     - php
     - MariaDB
+    - git
 2. apacheの設定
   * httpd.conf
     - DocumentRoot
     - phpの実行設定
 3. phpの設定
   * php.ini
-4. MariaDBの設定
+4. Vimの設定
+
+
+## TODO管理アプリの開発
+
+1. アプリの概要
+2. プロジェクトフォルダの作成
+3. MariaDBの設定
   * ユーザーの作成
   * 接続確認
+  * テーブル作成
+
 
