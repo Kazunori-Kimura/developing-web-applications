@@ -254,38 +254,4 @@ VimのFileFormatを元に説明
 * Mac (0x10)
 
 
-------
-
-# PHPによるWebアプリケーション開発
-
-## 開発環境の構築
-
-1. 開発環境の構築
-  * VirtualBox
-  * Vagrant
-  * CentOS6
-  * ssh
-  * yum
-    - apache
-    - php
-    - MariaDB
-    - git
-2. apacheの設定
-  * httpd.conf
-    - DocumentRoot
-    - phpの実行設定
-3. phpの設定
-  * php.ini
-4. Vimの設定
-
-
-## TODO管理アプリの開発
-
-1. アプリの概要
-2. プロジェクトフォルダの作成
-3. MariaDBの設定
-  * ユーザーの作成
-  * 接続確認
-  * テーブル作成
-
 
