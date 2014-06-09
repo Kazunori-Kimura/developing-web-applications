@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Todo</title>
+    <style>
+    .label{
+        width: 80px;
+    }
+    </style>
+</head>
+<body>
+    <form>
+        <label class="label" for="title">タイトル:</label>
+        <input type="text" id="title"><br>
+
+        <label class="label" for="description">内容:</label>
+        <textarea name="" id="description" cols="30" rows="10"></textarea><br>
+
+        <label for="done"><input type="checkbox" id="done">完了</label><br>
+
+        <div><span class="label">作成日</span><span class="date"></span></div>
+        <div><span class="label">更新日</span><span class="date"></span></div>
+
+        <div>
+            <input type="submit" value="更新">
+            <a href="index.html">戻る</a>
+        </div>
+    </form>
+</body>
+</html>

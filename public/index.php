@@ -11,6 +11,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Simple Todo</title>
+    <style>
+    .done a{
+        text-decoration: line-through;
+        color: #ccc;
+    }
+    </style>
 </head>
 <body>
     <ul>

@@ -56,7 +56,7 @@
 
         <div>
             <input type="submit" value="更新">
-            <button onclick="location.href='index.php'">戻る</button>
+            <a href="index.php">戻る</a>
         </div>
     </form>
 </body>
