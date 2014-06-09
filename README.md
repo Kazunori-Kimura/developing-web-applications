@@ -15,6 +15,12 @@ $ su -
 
 epel リポジトリを追加します(remi-release-6 が依存している)。
 
+* 64bit
+```
+# rpm -ivh http://ftp.riken.jp/Linux/fedora/epel/6/x86_64/epel-release-6-8.noarch.rpm
+```
+
+* 32bit
 ```
 # rpm -ivh http://ftp.riken.jp/Linux/fedora/epel/6/i386/epel-release-6-8.noarch.rpm
 ```
