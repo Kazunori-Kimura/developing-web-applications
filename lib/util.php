@@ -24,13 +24,6 @@ define('HASH_PASS', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c
  */
 function authenticate($user, $pass)
 {
-    if(session_status() != PHP_SESSION_ACTIVE)
-    {
-        // sessionが有効でない
-        throw new Exception('認証エラー');
-        return false;
-    }
-
     // ユーザーID,パスワードのチェック。
     // 今回は固定文字列とする
     if($user === USER_NAME && hash(HASH_ALGOS, $pass) === HASH_PASS)
