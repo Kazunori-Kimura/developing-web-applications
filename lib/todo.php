@@ -1,52 +1,30 @@
 <?php
-// http://www.php.net/manual/ja/language.oop5.overloading.php#object.get
-// マジックメソッドを使用して、getter/setterの定義を行います。
+
+include_once('ModelBase.php');
 
 /**
  * Todoクラス
  *
- *  - string $id
- *  - string $title
- *  - string $description
- *  - bool $done
- *  - datetime $created_at
- *  - datetime $updated_at
+ *  create table todos (
+ *      id integer primary key autoincrement,
+ *      user_id integer,
+ *      body text,
+ *      done boolean,
+ *      create_at datetime,
+ *      update_at datetime
+ *  );
  */
-class Todo
+class Todo extends ModelBase
 {
-    // プロパティ
-    private $data = array();
-
+    // コンストラクタ
     public function __construct()
     {
-        $this->id = '';
-        $this->title = '';
-        $this->description = '';
+        $this->id = 0;
+        $this->user_id = 0;
+        $this->body = '';
         $this->done = false;
-
         $this->created_at = 0;
         $this->updated_at = 0;
-    }
-
-    // setter
-    public function __set($name, $value)
-    {
-        $this->data[$name] = $value;
-    }
-
-    // getter
-    public function __get($name)
-    {
-        if(array_key_exists($name, $this->data))
-        {
-            return $this->data[$name];
-        }
-
-        // 存在しないプロパティ名を指定された場合
-        // エラーを発生させる
-        throw new Exception(sprintf('存在しないプロパティです。%s', $name));
-
-        return null;
     }
 
     /**
@@ -54,14 +32,14 @@ class Todo
      * @param array $conditions keyとvalueの組み合わせ
      * @return Todo
      */
-    public function find($conditions)
+    public function findFirst($conditions)
     {
         $todos = $this->select($conditions);
         if(count($todos) > 0)
         {
             $this->id = $todos[0]->id;
-            $this->title = $todos[0]->title;
-            $this->description = $todos[0]->description;
+            $this->user_id = $todos[0]->user_id;
+            $this->body = $todos[0]->body;
             $this->done = $todos[0]->done;
             $this->created_at = $todos[0]->created_at;
             $this->updated_at = $todos[0]->updated_at;
@@ -72,11 +50,11 @@ class Todo
     }
 
     /**
-     * 全件取得
+     * データ取得
      * @param array $conditions keyとvalueの組み合わせ
      * @return array<Todo>
      */
-    public function findAll($conditions)
+    public function find($conditions)
     {
         return $this->select($conditions);
     }
@@ -107,8 +85,8 @@ class Todo
         $sql = <<<'SQL'
 SELECT
     T.id
-    , T.title
-    , T.description
+    , T.user_id
+    , T.body
     , T.done
     , T.created_at
     , T.updated_at
@@ -121,23 +99,26 @@ SQL;
 
         // WHERE句
         $sqlWhere = '';
+
+        // SQL実行時に渡すパラメータ
         $params = array();
+
         if(count($conditions) > 0)
         {
             if(array_key_exists('id', $conditions))
             {
-                // id設定時
+                // idはPrimary Keyなので、ToDoが特定できる
+                // -> 他の検索条件は無視する
                 $sqlWhere = ' WHERE id = :id';
                 $params[':id'] = $conditions['id'];
             }
             else
             {
                 $cond = array();
-                if(array_key_exists('title', $conditions))
+                if(array_key_exists('user_id', $conditions))
                 {
-                    // titleは部分一致
-                    $cond[] = ' title like :title ';
-                    $params[':title'] = '%' . $conditions['title'] . '%';
+                    $cond[] = ' user_id = :user_id ';
+                    $params[':user_id'] = $conditions['user_id'];
                 }
                 if(array_key_exists('done', $conditions))
                 {
@@ -164,8 +145,8 @@ SQL;
         {
             $todo = new Todo();
             $todo->id = $record['id'];
-            $todo->titile = $record['title'];
-            $todo->description = $record['description'];
+            $todo->user_id = $record['user_id'];
+            $todo->body = $record['body'];
             $todo->done = $record['done'];
             $todo->created_at = $record['created_at'];
             $todo->updated_at = $record['updated_at'];
@@ -182,9 +163,6 @@ SQL;
      */
     public function insert()
     {
-        // idを生成
-        $this->id = $this->createUniqId();
-
         // id存在チェック
         if(! $this->isExists($this->id))
         {
@@ -192,17 +170,15 @@ SQL;
             $sql = <<< 'SQL'
 INSERT INTO todos
 (
-    id
-    , title
-    , description
+    user_id
+    , body
     , done
     , created_at
 )
 VALUES
 (
-    :id
-    , :titile
-    , :description
+    :user_id
+    , :body
     , :done
     , current_timestamp
 )
@@ -210,13 +186,16 @@ SQL;
 
             // パラメータ生成
             $params = array(
-                    ':id' => $this->id,
-                    ':title' => $this->title,
-                    ':description' => $this->description,
+                    ':user_id' => $this->user_id,
+                    ':body' => $this->body,
                     ':done' => $this->done
                 );
 
-            $this->exec($sql, $params);
+            // SQL実行
+            $id = $this->insert($sql, $params);
+
+            // 採番されたidをセット
+            $this->id = $id;
 
             return $this;
         }
@@ -238,8 +217,7 @@ SQL;
             $sql = <<< 'SQL'
 UPDATE todos
 SET
-    title = :title
-    , description = :description
+    body = :body
     , done = :done
     , updated_at = current_timestamp
 WHERE
@@ -249,12 +227,11 @@ SQL;
             // パラメータ生成
             $params = array(
                     ':id' => $this->id,
-                    ':title' => $this->title,
-                    ':description' => $this->description,
+                    ':body' => $this->body,
                     ':done' => $this->done
                 );
 
-            $this->exec($sql, $params);
+            $this->update($sql, $params);
 
             return $this;
         }
@@ -282,89 +259,9 @@ SQL;
             // パラメータ生成
             $params = array(':id' => $this->id);
 
-            return $this->exec($sql, $params);
+            return $this->delete($sql, $params);
         }
 
         return 0;
-    }
-
-    /**
-     * UniqIdを生成する
-     * @return string
-     */
-    private function createUniqId()
-    {
-        $uid = uniqid();
-        $hash = $uid . md5($this->data['title']);
-
-        return sprintf('%08s-%04s-%04s-%04s-%12s',
-            substr($hash, 0, 8),
-            substr($hash, 8, 4),
-            substr($hash,12, 4),
-            substr($hash,16, 4),
-            substr($hash,20,12));
-    }
-
-
-    /**
-     * PDO DSNを返す
-     * @return string
-     */
-    private function getDsn()
-    {
-        return 'sqlite:' . dirname(__FILE__) . '/todos.db';
-    }
-
-    /**
-     * SQLを実行し結果行を返す
-     * @param string $sql
-     * @param array $params
-     * @return array
-     */
-    private function query($sql, $params=array())
-    {
-        $db = new PDO($this->getDsn());
-
-        // sqlを実行する準備を行い、PDOStatementオブジェクトを返す
-        $stat = $db->prepare($sql);
-        // sqlを実行し、結果をPDOStatementオブジェクトに保持
-        $stat->execute($params);
-        // 全ての結果行を含む配列を返す
-        $records = $stat->fetchAll();
-
-        return $records;
-    }
-
-    /**
-     * SQLを実行し作用した件数を返す
-     * @param string $sql
-     * @param array $params
-     * @return int
-     */
-    private function exec($sql, $params=array())
-    {
-        $count = 0;
-        $db = new PDO($this->getDsn());
-
-        try
-        {
-            $db->beginTransaction();
-
-            // sqlを実行する準備を行い、PDOStatementオブジェクトを返す
-            $stat = $db->prepare($sql);
-            // sqlを実行し、結果をPDOStatementオブジェクトに保持
-            $stat->execute($params);
-            // 直近の DELETE, INSERT, UPDATE 文によって作用した行数を返す
-            $count = $stat->rowCount();
-
-            $db->commit();
-        }
-        catch(Exception ex)
-        {
-            $db->rollBack();
-            throw ex;
-        }
-
-        return $count;
     }
 }
