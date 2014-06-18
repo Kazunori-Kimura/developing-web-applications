@@ -1,0 +1,19 @@
+{
+  "name": "create_database",
+  "version": "0.0.0",
+  "description": "create SQLite database",
+  "main": "app.js",
+  "dependencies": {
+    "sqlite3": "^2.2.3",
+    "here": "^0.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sqlite"
+  ],
+  "author": "kazunori.kimura.js@gmail.com",
+  "license": "MIT"
+}

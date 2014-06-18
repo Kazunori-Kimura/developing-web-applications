@@ -14,8 +14,6 @@ define('AUTH_SALT', 'hoge');
 // hash algorithm
 define('HASH_ALGOS', 'sha256');
 
-// test authentication
-define('USER_NAME', 'kimura');
 // '1234'
 define('HASH_PASS', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4');
 
@@ -58,8 +56,26 @@ function authenticate($user, $pass)
  */
 function getToken($user)
 {
-    // 3回 sha256をかける
-    return hash(HASH_ALGOS, hash(HASH_ALGOS, hash(HASH_ALGOS, AUTH_SALT . $user)));
+    // 10回 sha256をかける
+    return stretch(AUTH_SALT . $user);
+}
+
+/**
+ * ストレッチング処理
+ * @param string $str 元文字列
+ * @param int $number 試行回数
+ * @return string
+ */
+function stretch($str, $number=10)
+{
+    $ret = $str;
+    
+    for($i = 0; $i <= $number; $i++)
+    {
+        $ret = hash(HASH_ALGOS, $ret);
+    }
+
+    return $ret;
 }
 
 // --- HTML出力 ---

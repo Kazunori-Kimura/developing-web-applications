@@ -35,6 +35,7 @@ class Todo extends ModelBase
     public function findFirst($conditions)
     {
         $todos = $this->select($conditions);
+
         if(count($todos) > 0)
         {
             $this->id = $todos[0]->id;
@@ -61,12 +62,12 @@ class Todo extends ModelBase
 
     /**
      * 指定されたIDのTodoが存在するか？
-     * @param string $id
      * @return bool
      */
-    public function isExists($id)
+    public function isExists()
     {
-        $todos = $this->select(array('id' => $id));
+        $todos = $this->select(array('id' => $this->id));
+
         if(count($todos) > 0)
         {
             return true;
@@ -161,10 +162,10 @@ SQL;
      * 登録
      * @return Todo
      */
-    public function insert()
+    public function add()
     {
         // id存在チェック
-        if(! $this->isExists($this->id))
+        if(! $this->isExists())
         {
             // SQL
             $sql = <<< 'SQL'
@@ -186,10 +187,10 @@ SQL;
 
             // パラメータ生成
             $params = array(
-                    ':user_id' => $this->user_id,
-                    ':body' => $this->body,
-                    ':done' => $this->done
-                );
+                ':user_id' => $this->user_id,
+                ':body' => $this->body,
+                ':done' => $this->done
+            );
 
             // SQL実行
             $id = $this->insert($sql, $params);
@@ -208,10 +209,10 @@ SQL;
      * 更新
      * @return Todo
      */
-    public function update()
+    public function sync()
     {
         // id存在チェック
-        if($this->isExists($this->id))
+        if($this->isExists())
         {
             // SQL
             $sql = <<< 'SQL'
@@ -236,7 +237,7 @@ SQL;
             return $this;
         }
 
-        throw new Exception(sprintf('指定されたIDのTodoが存在しません。id=%s', $this->id);
+        throw new Exception(sprintf('指定されたIDのTodoが存在しません。id=%s', $this->id));
         return null;
     }
 
@@ -244,10 +245,10 @@ SQL;
      * 削除
      * @return int
      */
-    public function delete()
+    public function remove()
     {
         // id存在チェック
-        if($this->isExists($this->id))
+        if($this->isExists())
         {
             // SQL
             $sql = <<< 'SQL'
