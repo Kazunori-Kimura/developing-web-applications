@@ -1,7 +1,7 @@
 var sqlite3 = require('sqlite3').verbose(),
     here = require('here').here;
 
-var db = new sqlite3.Database('todos.db');
+var db = new sqlite3.Database('../lib/todos.db');
 
 var sql1 = here(/*
 create table todos (
