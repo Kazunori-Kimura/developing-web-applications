@@ -31,8 +31,8 @@ class User extends ModelBase
         $this->mail = '';
         $this->password = '';
         $this->last_login = 0;
-        $this->created_at = 0;
-        $this->updated_at = 0;
+        $this->create_at = 0;
+        $this->update_at = 0;
     }
 
     /**
@@ -55,8 +55,8 @@ class User extends ModelBase
             $this->mail = $users[0]->mail;
             $this->password = $users[0]->password;
             $this->last_login = $users[0]->last_login;
-            $this->created_at = $users[0]->created_at;
-            $this->updated_at = $users[0]->updated_at;
+            $this->create_at = $users[0]->create_at;
+            $this->update_at = $users[0]->update_at;
         }
 
         return $this;
@@ -101,7 +101,7 @@ class User extends ModelBase
         // 1件取得
         $this->findFirst($params);
 
-        if(! empty($this->id))
+        if(strlen($this->mail) > 0)
         {
             // ログイン日時更新
             $this->logined();
@@ -128,13 +128,13 @@ SELECT
     , U.mail
     , U.password
     , U.last_login
-    , U.created_at
-    , U.updated_at
+    , U.create_at
+    , U.update_at
 FROM
-    Users U
+    users U 
 %s
 ORDER BY
-    U.id
+    U.id ASC
 SQL;
 
         // WHERE句
@@ -149,7 +149,7 @@ SQL;
             {
                 // idはPrimary Keyなので、Userが特定できる
                 // -> 他の検索条件は無視する
-                $sqlWhere = ' WHERE id = :id';
+                $sqlWhere = ' WHERE U.id = :id ';
                 $params[':id'] = $conditions['id'];
             }
             else
@@ -157,12 +157,12 @@ SQL;
                 $cond = array();
                 if(array_key_exists('mail', $conditions))
                 {
-                    $cond[] = ' mail = :mail ';
+                    $cond[] = ' U.mail = :mail ';
                     $params[':mail'] = $conditions['mail'];
                 }
                 if(array_key_exists('password', $conditions))
                 {
-                    $cond[] = ' password = :password ';
+                    $cond[] = ' U.password = :password ';
                     $params[':password'] = $conditions['password'];
                 }
 
@@ -188,8 +188,8 @@ SQL;
             $user->mail = $record['mail'];
             $user->password = $record['password'];
             $user->last_login = $record['last_login'];
-            $user->created_at = $record['created_at'];
-            $user->updated_at = $record['updated_at'];
+            $user->create_at = $record['create_at'];
+            $user->update_at = $record['update_at'];
 
             $users[] = $user;
         }
@@ -212,7 +212,7 @@ INSERT INTO users
 (
     mail
     , password
-    , created_at
+    , create_at
 )
 VALUES
 (
@@ -291,7 +291,7 @@ UPDATE users
 SET
     mail = :mail
     , password = :password
-    , updated_at = current_timestamp
+    , update_at = current_timestamp
 WHERE
     id = :id
 SQL;

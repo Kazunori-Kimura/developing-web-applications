@@ -19,12 +19,18 @@ class Todo extends ModelBase
     // コンストラクタ
     public function __construct()
     {
+        $this->initialize();
+    }
+
+    // 初期化
+    public function initialize()
+    {
         $this->id = 0;
         $this->user_id = 0;
         $this->body = '';
         $this->done = false;
-        $this->created_at = 0;
-        $this->updated_at = 0;
+        $this->create_at = 0;
+        $this->update_at = 0;
     }
 
     /**
@@ -42,8 +48,8 @@ class Todo extends ModelBase
             $this->user_id = $todos[0]->user_id;
             $this->body = $todos[0]->body;
             $this->done = $todos[0]->done;
-            $this->created_at = $todos[0]->created_at;
-            $this->updated_at = $todos[0]->updated_at;
+            $this->create_at = $todos[0]->create_at;
+            $this->update_at = $todos[0]->update_at;
 
             return $this;
         }
@@ -55,7 +61,7 @@ class Todo extends ModelBase
      * @param array $conditions keyとvalueの組み合わせ
      * @return array<Todo>
      */
-    public function find($conditions)
+    public function find($conditions=array())
     {
         return $this->select($conditions);
     }
@@ -89,8 +95,8 @@ SELECT
     , T.user_id
     , T.body
     , T.done
-    , T.created_at
-    , T.updated_at
+    , T.create_at
+    , T.update_at
 FROM
     Todos T 
 %s
@@ -149,8 +155,8 @@ SQL;
             $todo->user_id = $record['user_id'];
             $todo->body = $record['body'];
             $todo->done = $record['done'];
-            $todo->created_at = $record['created_at'];
-            $todo->updated_at = $record['updated_at'];
+            $todo->create_at = $record['create_at'];
+            $todo->update_at = $record['update_at'];
 
             $todos[] = $todo;
         }
@@ -164,17 +170,14 @@ SQL;
      */
     public function add()
     {
-        // id存在チェック
-        if(! $this->isExists())
-        {
-            // SQL
-            $sql = <<< 'SQL'
+        // SQL
+        $sql = <<< 'SQL'
 INSERT INTO todos
 (
     user_id
     , body
     , done
-    , created_at
+    , create_at
 )
 VALUES
 (
@@ -185,24 +188,20 @@ VALUES
 )
 SQL;
 
-            // パラメータ生成
-            $params = array(
-                ':user_id' => $this->user_id,
-                ':body' => $this->body,
-                ':done' => $this->done
-            );
+        // パラメータ生成
+        $params = array(
+            ':user_id' => $this->user_id,
+            ':body' => $this->body,
+            ':done' => $this->done
+        );
 
-            // SQL実行
-            $id = $this->insert($sql, $params);
+        // SQL実行
+        $id = $this->insert($sql, $params);
 
-            // 採番されたidをセット
-            $this->id = $id;
+        // idで再検索
+        $this->findFirst(array('id'=>$id));
 
-            return $this;
-        }
-
-        throw new Exception('Todo登録エラー');
-        return null;
+        return $this;
     }
 
     /**
@@ -220,7 +219,7 @@ UPDATE todos
 SET
     body = :body
     , done = :done
-    , updated_at = current_timestamp
+    , update_at = current_timestamp
 WHERE
     id = :id
 SQL;
@@ -232,7 +231,11 @@ SQL;
                     ':done' => $this->done
                 );
 
+            // 更新
             $this->update($sql, $params);
+
+            // 再取得
+            $this->findFirst(array('id'=>$this->id));
 
             return $this;
         }

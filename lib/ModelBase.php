@@ -5,6 +5,9 @@
 // http://www.php.net/manual/ja/language.oop5.overloading.php#object.get
 // マジックメソッドを使用して、getter/setterの定義を行います。
 
+// クラスの定数を参照する際、self::CONSTANT_NAME としないと警告が出て、
+// 勝手に'CONSTANT_NAME'という文字列として扱われる。
+
 /**
  * Userクラス、Todoクラスの継承元となるクラス
  */
@@ -57,7 +60,7 @@ class ModelBase
      */
     protected function getDsn()
     {
-        return 'sqlite:' . dirname(__FILE__) . '/todos.db';
+        return 'sqlite:' . dirname(__file__) . DIRECTORY_SEPARATOR . 'todos.db';
     }
 
     /**
@@ -70,12 +73,20 @@ class ModelBase
     {
         $db = new PDO($this->getDsn());
 
+        // エラー時にExceptionを出すよう変更
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
         // sqlを実行する準備を行い、PDOStatementオブジェクトを返す
         $stat = $db->prepare($sql);
+
         // sqlを実行し、結果をPDOStatementオブジェクトに保持
         $stat->execute($params);
+
         // 全ての結果行を含む配列を返す
         $records = $stat->fetchAll();
+
+        // カーソル閉じる (fetchAll時は不要だが、念のため)
+        $stat->closeCursor();
 
         return $records;
     }
@@ -88,7 +99,7 @@ class ModelBase
      */
     protected function insert($sql, $params=array())
     {
-        return $this->exec($sql, $params, TYPE_INSERT);
+        return $this->exec($sql, $params, self::TYPE_INSERT);
     }
 
     /**
@@ -99,7 +110,7 @@ class ModelBase
      */
     protected function update($sql, $params=array())
     {
-        return $this->exec($sql, $params, TYPE_UPDATE);
+        return $this->exec($sql, $params, self::TYPE_UPDATE);
     }
 
     /**
@@ -110,7 +121,7 @@ class ModelBase
      */
     protected function delete($sql, $params=array())
     {
-        return $this->exec($sql, $params, TYPE_DELETE);
+        return $this->exec($sql, $params, self::TYPE_DELETE);
     }
 
     /**
@@ -120,10 +131,13 @@ class ModelBase
      * @param int $type SQLの種別 (INSERT/UPDATE/DELETE)
      * @return int
      */
-    protected function exec($sql, $params=array(), $type=TYPE_UPDATE)
+    protected function exec($sql, $params=array(), $type=self::TYPE_UPDATE)
     {
         $ret = 0;
         $db = new PDO($this->getDsn());
+
+        // エラー時にExceptionを出すよう変更
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         try
         {
@@ -140,16 +154,16 @@ class ModelBase
 
             $db->commit();
 
-            if($type == TYPE_INSERT)
+            if($type == self::TYPE_INSERT)
             {
                 // INSERTの場合、autoincrementで採番されたidを返す
                 $ret = $db->lastInsertId();
             }
         }
-        catch(Exception ex)
+        catch(Exception $ex)
         {
             $db->rollBack();
-            throw ex;
+            throw $ex;
         }
 
         return $ret;
