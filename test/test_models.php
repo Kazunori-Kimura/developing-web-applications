@@ -183,11 +183,13 @@ $todo->remove();
 
 <table class="table table-striped">
     <thead>
-        <th>id</th>
-        <th>body</th>
-        <th>done</th>
-        <th>create_at</th>
-        <th>update_at</th>
+        <tr>
+            <th>id</th>
+            <th>body</th>
+            <th>done</th>
+            <th>create_at</th>
+            <th>update_at</th>
+        </tr>
     </thead>
     <tbody>
 <?php

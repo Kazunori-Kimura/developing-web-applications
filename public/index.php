@@ -98,19 +98,23 @@ function login()
             method="post"
             action="index.php">
 
-            <input type="hidden" name="token" value="<?php echo($sessionToken); ?>">
+            <input type="hidden" name="token"
+                value="<?php echo($sessionToken); ?>">
 
             <h2 class="form-signin-heading">Please sign in</h2>
+
             <input type="email"
                 id="user_id" name="user_id" class="form-control"
                 value="<?php esc($_POST["user_id"]); ?>"
                 placeholder="Email address" required autofocus>
+            
             <input type="password"
                 id="pass" name="pass" class="form-control"
                 placeholder="Password" required>
+            
             <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 
-            <!-- Errorダイアログ -->
+            <!-- Errorメッセージ -->
             <input type="hidden" id="auth_message" value="<?php esc($errorMessage); ?>">
         </form>
 
@@ -126,6 +130,7 @@ function login()
     <script>
     // document#onload
     $(function(){
+        // hiddenからエラーメッセージ取得
         var msg = $("input#auth_message").val();
 
         if(msg.length > 0){

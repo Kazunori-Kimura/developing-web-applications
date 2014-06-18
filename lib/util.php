@@ -38,9 +38,31 @@ function stretch($str, $number=10)
  */
 function esc($html)
 {
-    echo(htmlentities($html, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    // XSS対策のため、特殊文字を HTML エンティティに変換
+    echo(escape($html));
 }
 
+/**
+ * 特殊文字を HTML エンティティに変換する
+ * @param string $html
+ */
+function escape($html)
+{
+    // XSS対策のため、特殊文字を HTML エンティティに変換
+    return htmlentities($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
 
+/**
+ * ログアウト処理
+ * (HTML出力前に呼ぶ必要あり)
+ */
+function logout()
+{
+    // sessionを破棄
+    $_SESSION = array();
+    @session_destroy(); // エラー無視
 
-
+    // ログイン画面に遷移
+    header('Location index.php');
+    exit;
+}
