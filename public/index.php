@@ -4,19 +4,79 @@
 // http://getbootstrap.com/examples/signin/
 
 include_once '../lib/util.php';
+include_once '../lib/User.php';
 
+// Sessionの開始
 session_start();
-// session_id更新
+
+// session_id更新前に、CSRF対策用のトークンを再生成しておく
+$prevSessionToken = stretch(TOKEN_SALT . session_id());
+
+// Session乗っ取り対策のため、session_idを更新する
 session_regenerate_id();
 
-// session_token
-$sessionToken = hash(HASH_ALGOS, uniqid() . session_id());
+// CSRF対策のためのsession_tokenを生成する
+$sessionToken = stretch(TOKEN_SALT . session_id());
 
-// postされた場合
-if(isset($_POST["user_id"]))
+// エラーメッセージ
+$errorMessage = '';
+
+// CSRF対策のsession_tokenを照会する
+if(isset($_POST['token']))
 {
-    $uid = $_POST["user_id"];
-    $pass = $_POST["pass"];
+    if($_POST['token'] !== $prevSessionToken)
+    {
+        $errorMessage = 'CSRFが疑われるため、処理を継続できません。';
+    }
+    else
+    {
+        // ログイン処理
+        $errorMessage = login();
+    }
+}
+
+/**
+ * ログイン処理
+ */
+function login()
+{
+    $msg = '';
+    if(isset($_POST["user_id"]))
+    {
+        $user = new User();
+
+        // メールアドレス
+        $user->mail = $_POST['user_id'];
+        // パスワード
+        // パスワード漏洩対策のため、saltを付けてストレッチングしている
+        $user->password = stretch(AUTH_SALT .
+            $user->mail .
+            $_POST['pass']);
+
+        if($user->auth())
+        {
+            // 認証成功時、一旦Sessionを全て破棄
+            //   前回ログイン時の情報等が残らないように
+            $_SESSION = array();
+            @session_destroy(); // エラー無視
+
+            // Session再開
+            session_start();
+
+            // sessionにログインユーザーのidを保持する
+            $_SESSION[S_KEY_USER_ID] = $user->id;
+
+            // list.phpに遷移
+            header('Location list.php');
+            exit;
+        }
+        else
+        {
+            // 認証失敗
+            $msg = '認証に失敗しました。';
+        }
+    }
+    return $msg;
 }
 
 ?><!doctype html>
@@ -28,57 +88,22 @@ if(isset($_POST["user_id"]))
 
     <title>Simple Todo</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-    <style>
-        body {
-            padding-top: 40px;
-            padding-bottom: 40px;
-            background-color: #eee;
-        }
-
-        .form-signin {
-            max-width: 330px;
-            padding: 15px;
-            margin: 0 auto;
-        }
-        .form-signin .form-signin-heading,
-        .form-signin .checkbox {
-            margin-bottom: 10px;
-        }
-        .form-signin .checkbox {
-            font-weight: normal;
-        }
-        .form-signin .form-control {
-            position: relative;
-            height: auto;
-            -webkit-box-sizing: border-box;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-            padding: 10px;
-            font-size: 16px;
-        }
-        .form-signin .form-control:focus {
-            z-index: 2;
-        }
-        .form-signin input[type="email"] {
-            margin-bottom: -1px;
-            border-bottom-right-radius: 0;
-            border-bottom-left-radius: 0;
-        }
-        .form-signin input[type="password"] {
-            margin-bottom: 10px;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
     <div class="container">
 
-        <form class="form-signin" role="form" method="post" action="index.php">
+        <form class="form-signin" role="form"
+            method="post"
+            action="index.php">
+
+            <input type="hidden" name="token" value="<?php echo($sessionToken); ?>">
+
             <h2 class="form-signin-heading">Please sign in</h2>
             <input type="email"
                 id="user_id" name="user_id" class="form-control"
+                value="<?php esc($_POST["user_id"]); ?>"
                 placeholder="Email address" required autofocus>
             <input type="password"
                 id="pass" name="pass" class="form-control"
@@ -86,13 +111,13 @@ if(isset($_POST["user_id"]))
             <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 
             <!-- Errorダイアログ -->
-            <input type="hidden" id="auth_message" value="<?php esc($msg); ?>">
-            <div class="alert alert-danger" id="alert_dialog">
-                <span class="glyphicon glyphicon-exclamation-sign"></span>
-                <span id="error_message"></span>
-            </div>
-
+            <input type="hidden" id="auth_message" value="<?php esc($errorMessage); ?>">
         </form>
+
+        <div class="alert alert-danger" id="alert_dialog">
+            <span class="glyphicon glyphicon-exclamation-sign"></span>
+            <span id="error_message"></span>
+        </div>
 
     </div>
 
