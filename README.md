@@ -54,6 +54,4 @@ sqlite入ってる？
 # sqlite3 --version
 3.6.20
 # exit
-$ which vim
-/usr/bin/vim
 ```
