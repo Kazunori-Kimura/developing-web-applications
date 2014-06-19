@@ -60,7 +60,51 @@ class ModelBase
      */
     protected function getDsn()
     {
+        // ファイルが存在しなければ、作成される
         return 'sqlite:' . dirname(__file__) . DIRECTORY_SEPARATOR . 'todos.db';
+    }
+
+    /**
+     * テーブル作成
+     */
+    private function createTable()
+    {
+        $db = new PDO($this->getDsn());
+
+        // エラー時にExceptionを出すよう変更
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        // Todoテーブル生成SQL
+        $sqlCreateTodos = <<< 'SQL1'
+create table if not exists todos (
+    id integer primary key autoincrement,
+    user_id integer,
+    body text,
+    done boolean,
+    create_at datetime,
+    update_at datetime
+)
+SQL1;
+
+        // Userテーブル生成SQL
+        $sqlCreateUsers = <<< 'SQL2'
+create table if not exists users (
+    id integer primary key autoincrement,
+    mail text unique,
+    password text,
+    last_login datetime,
+    create_at datetime,
+    update_at datetime
+)
+SQL2;
+
+        // Todos
+        $stat = $db->prepare($sqlCreateTodos);
+        $stat->execute();
+
+        // Users
+        $stat = $db->prepare($sqlCreateUsers);
+        $stat->execute();
     }
 
     /**
@@ -71,6 +115,12 @@ class ModelBase
      */
     protected function query($sql, $params=array())
     {
+        // ファイルがなければ、Database作成をおこなう
+        if(!file_exists(dirname(__file__) . DIRECTORY_SEPARATOR . 'todos.db'))
+        {
+            $this->createTable();
+        }
+
         $db = new PDO($this->getDsn());
 
         // エラー時にExceptionを出すよう変更
