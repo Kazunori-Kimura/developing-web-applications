@@ -132,9 +132,7 @@ function update($uid)
             <label for="todoBody">内容</label>
             <textarea name="todoBody"
                 class="form-control" id="todoBody"
-                rows="4"
-                value="<?php edq($todo->body); ?>">
-            </textarea>
+                rows="8"><?php esc($todo->body); ?></textarea>
         </div>
 
         <div class="checkbox">
@@ -142,7 +140,7 @@ function update($uid)
                 <input type="checkbox"
                     id="todoDone" name="todoDone" value="1"
 <?php
-    if($todo->done === 1)
+    if($todo->done)
     {
         echo('checked');
     }

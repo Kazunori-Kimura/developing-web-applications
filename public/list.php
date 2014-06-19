@@ -134,7 +134,7 @@ $rowTemplate = <<< 'ROW'
     </td>
     <td><p class="%s">%s</p></td>
     <td>
-        <a class="btn btn-primary todoUpdate"
+        <a class="btn btn-xs btn-primary todoUpdate"
             href="edit.php?id=%d">
             <span class="glyphicon glyphicon-pencil"></span>
         </a>
@@ -142,7 +142,7 @@ $rowTemplate = <<< 'ROW'
     <td>
         <button type="submit"
             name="todoRemove"
-            class="btn btn-danger todoRemove"
+            class="btn btn-xs btn-danger todoRemove"
             value="%d">
             <span class="glyphicon glyphicon-remove"></span>
         </button>
