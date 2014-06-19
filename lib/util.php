@@ -45,6 +45,7 @@ function esc($html)
 /**
  * 特殊文字を HTML エンティティに変換する
  * @param string $html
+ * @return string
  */
 function escape($html)
 {
@@ -53,16 +54,74 @@ function escape($html)
 }
 
 /**
- * ログアウト処理
- * (HTML出力前に呼ぶ必要あり)
+ * ダブルクォーテーションをエスケープして出力する
+ * @param string $value
  */
-function logout()
+function edq($value)
 {
-    // sessionを破棄
-    $_SESSION = array();
-    @session_destroy(); // エラー無視
-
-    // ログイン画面に遷移
-    header('Location index.php');
-    exit;
+    echo(escapeDoubleQuarto($value));
 }
+
+/**
+ * ダブルクォーテーションをエスケープする
+ * @param string $value
+ * @return string
+ */
+function escapeDoubleQuarto($value)
+{
+    return str_replace('"', '\"', $value);
+}
+
+
+/**
+ * ページ読み込み時の共通処理
+ * sessionの開始、認証チェック、CSRFチェック
+ * @return array
+ */
+function initPage()
+{
+    // Sessionの開始
+    session_start();
+
+    // session_id更新前に、CSRF対策用のトークンを再生成しておく
+    $prevSessionToken = stretch(TOKEN_SALT . session_id());
+
+    // Session乗っ取り対策のため、session_idを更新する
+    session_regenerate_id();
+
+    // CSRF対策のためのsession_tokenを生成する
+    $sessionToken = stretch(TOKEN_SALT . session_id());
+
+    // 認証チェックとログインユーザーIDの取得
+    $isAuth = false;
+    $uid = 0;
+
+    if(isset($_SESSION[S_KEY_USER_ID]))
+    {
+        $isAuth = true;
+        $uid = (int)$_SESSION[S_KEY_USER_ID];
+    }
+
+    // POST時はCSRFのチェックを行う
+    $isPost = false;
+    $isCSRF = false;
+    if(isset($_POST['token']))
+    {
+        $isPost = true;
+
+        // 埋め込まれたtokenとsession_idから生成したtokenを比較
+        if($_POST['token'] !== $prevSessionToken)
+        {
+            $isCSRF = true;
+        }
+    }
+
+    return array(
+            'token' => $sessionToken,
+            'uid' => $uid,
+            'isAuth' => $isAuth,
+            'isPost' => $isPost,
+            'isCSRF' => $isCSRF
+        );
+}
+

@@ -26,7 +26,7 @@ class ModelBase
      * setter定義
      * プロパティに値をセットする
      * @param string $name
-     * @param mix $value
+     * @param mixed $value
      */
     public function __set($name, $value)
     {
@@ -37,7 +37,7 @@ class ModelBase
      * getter定義
      * プロパティを取得する
      * @param string $name
-     * @return mix $value
+     * @return mixed $value
      */
     public function __get($name)
     {
