@@ -1,0 +1,9 @@
+/* style.css */
+body {
+    margin: 60px;
+}
+
+.done {
+    text-decoration: line-through;
+    color: #ccc;
+}
